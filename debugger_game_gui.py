@@ -4,11 +4,11 @@ from random import randint
 from tkinter import ttk, messagebox
 
 
-class MouseClickType(StrEnum):
-    """Тип клика мышкой"""
+class ActionType(StrEnum):
+    """Тип действия"""
 
-    LEFT= "left"
-    RIGHT= "right"
+    OPEN= "open" # открыть клетку
+    MARK= "mark" # отметить клетку флагом
 
 class Cell:
     """Класс одной клетки поля"""
@@ -59,12 +59,12 @@ class DebuggerGame:
         """Возвращает инстанс клетки поля"""
         return Cell()
 
-    def play_game(self, row: int, col: int, mouse_click_type: MouseClickType) -> DebuggerGameResponse:
+    def play_game(self, row: int, col: int, action_type: ActionType) -> DebuggerGameResponse:
         """
         Игровой цикл.
         :param row: индекс строки клетки
         :param col: индекс столбца клетки
-        :param mouse_click_type: тип клика (левый или правый)
+        :param action_type: тип действия (открыть клетку или отметить флагом)
         :return: модель результата игры после клика по клетке
         """
         # Если игра закончена победой и поражением, то выходим
@@ -82,8 +82,8 @@ class DebuggerGame:
             self.place_bugs(row, col)
             self.set_num_of_bugs_around()
 
-        # При правом клике мыши помечаем клетку флагом
-        if mouse_click_type == MouseClickType.RIGHT:
+        # Если действие отметить клетку флагом
+        if action_type == ActionType.MARK:
             self.board[row][col].is_set_flag = not self.board[row][col].is_set_flag
             return DebuggerGameResponse(
                 is_win=self.is_win,
@@ -257,8 +257,8 @@ class CellGUI:
 
         self.button = ttk.Button(self.master, text=" ", width=2)
         self.button.grid(row=self.row, column=self.col)
-        self.button.bind("<ButtonPress-1>", lambda e, r=self.row, c=self.col, mck=MouseClickType.LEFT: game_func(e, r, c, mck))
-        self.button.bind("<ButtonPress-3>", lambda e, r=self.row, c=self.col, mck=MouseClickType.RIGHT: game_func(e, r, c, mck))
+        self.button.bind("<ButtonPress-1>", lambda e, r=self.row, c=self.col, mck=ActionType.OPEN: game_func(e, r, c, mck))
+        self.button.bind("<ButtonPress-3>", lambda e, r=self.row, c=self.col, mck=ActionType.MARK: game_func(e, r, c, mck))
 
 class DebuggerGameGUI:
     """Класс графической оболочки и интерфейса взаимодействия игры Дебаггер"""
@@ -310,14 +310,14 @@ class DebuggerGameGUI:
         except KeyboardInterrupt:
             pass
 
-    def play_game(self, event, row: int, col: int, mouse_click_type: MouseClickType) -> None:
+    def play_game(self, event, row: int, col: int, action_type: ActionType) -> None:
         """
         Функция, которая вызывается при клике по игровой клетке.
 
         :param event: событие
         :param row: индекс строки клетки
         :param col: индекс столбца клетки
-        :param mouse_click_type: тип клика (левый или правый)
+        :param action_type: тип действия открыть клетку или отметить флагом
         :return: None
         """
         # Не обрабатываем нажатие на выключенную кнопку
@@ -325,7 +325,7 @@ class DebuggerGameGUI:
             return
 
         # Обращаемся к ядру игры за результатом
-        debugger_game_response = self.debugger_game.play_game(row=row, col=col, mouse_click_type=mouse_click_type)
+        debugger_game_response = self.debugger_game.play_game(row=row, col=col, action_type=action_type)
 
         # Отображаем текст, если выиграли или проиграли
         if debugger_game_response.is_win:
