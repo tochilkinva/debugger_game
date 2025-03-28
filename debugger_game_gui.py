@@ -91,6 +91,14 @@ class DebuggerGame:
                 board=self.board
             )
 
+        # Если действие открыть клетку с флагом, то выходим
+        if action_type == ActionType.OPEN and self.board[row][col].is_set_flag:
+            return DebuggerGameResponse(
+                is_win=self.is_win,
+                is_gameover=self.is_gameover,
+                board=self.board
+            )
+
         # Отобразили клетку и пустые клетки вокруг
         self.reveal(row, col)
 
